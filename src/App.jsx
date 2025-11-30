@@ -1,15 +1,17 @@
 import { useEffect, useState } from "react";
 import { fetchList, fetchItem } from "./api/hackerNews";
 import PostList from "./components/postList";
+import Login from "./components/login";
 
 const STORY_TYPES = [
   { key: "topstories", label: "Top Posts" },
   { key: "newstories", label: "New Posts" },
 ];
 
-const PAGE_OPTIONS = [10, 20, 50, 100]; // options for posts per page
+const PAGE_OPTIONS = [10, 20, 50, 100];
 
 export default function App() {
+  const [user, setUser] = useState(null); // track logged in user
   const [postType, setPostType] = useState("topstories");
   const [storyIds, setStoryIds] = useState([]);
   const [stories, setStories] = useState([]);
@@ -18,8 +20,9 @@ export default function App() {
   const [viewAll, setViewAll] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  // Fetch story IDs when postType changes
+  // Fetch story IDs when postType changes or user logs in
   useEffect(() => {
+    if (!user) return; // only load stories if logged in
     async function loadIds() {
       setLoading(true);
       const ids = await fetchList(postType);
@@ -29,22 +32,24 @@ export default function App() {
       setLoading(false);
     }
     loadIds();
-  }, [postType]);
+  }, [postType, user]);
 
   // Fetch stories for current page or view all
   useEffect(() => {
+    if (!user || storyIds.length === 0) return;
+
     async function loadStories() {
       setLoading(true);
-      let start = 0;
-      let end = viewAll ? storyIds.length : currentPage * pageSize;
+      const start = 0;
+      const end = viewAll ? storyIds.length : currentPage * pageSize;
       const items = await Promise.all(
         storyIds.slice(start, end).map((id) => fetchItem(id))
       );
       setStories(items);
       setLoading(false);
     }
-    if (storyIds.length > 0) loadStories();
-  }, [storyIds, currentPage, pageSize, viewAll]);
+    loadStories();
+  }, [storyIds, currentPage, pageSize, viewAll, user]);
 
   const totalPages = Math.ceil(storyIds.length / pageSize);
 
@@ -53,9 +58,24 @@ export default function App() {
 
   const handleViewAll = () => setViewAll(true);
 
+  // --- If not logged in, show login screen ---
+  if (!user) {
+    return <Login onLogin={setUser} />;
+  }
+
   return (
     <div style={styles.container}>
       <h1 style={styles.header}>Hacker News Redesign</h1>
+
+      {/* Welcome & Sign Out */}
+      {user && (
+        <div style={{ marginBottom: "20px" }}>
+          <span style={{ marginRight: "15px" }}>Welcome, <strong>{user}</strong>!</span>
+          <button style={styles.signOutButton} onClick={() => setUser(null)}>
+            Sign Out
+          </button>
+        </div>
+      )}
 
       {/* Toggle Top/New */}
       <div style={styles.toggle}>
@@ -70,7 +90,7 @@ export default function App() {
         ))}
       </div>
 
-      {/* Page size selector */}
+      {/* Page size selector & View All */}
       <div style={{ marginBottom: "15px" }}>
         <label htmlFor="pageSize" style={{ marginRight: "10px" }}>Posts per page:</label>
         <select
@@ -96,7 +116,7 @@ export default function App() {
         </button>
       </div>
 
-      {loading && <p style={{ textAlign: "center" }}>Loading posts...</p>}
+      {loading && <p>Loading posts...</p>}
 
       {!loading && <PostList stories={stories} />}
 
@@ -137,6 +157,8 @@ const styles = {
     borderRadius: "8px",
     boxShadow: "0 0 15px rgba(0,0,0,0.5)",
     color: "#fff",
+    margin: "40px auto",
+    fontFamily: "Arial, sans-serif",
   },
   header: { marginBottom: "20px", textAlign: "center" },
   toggle: { display: "flex", justifyContent: "center", gap: "10px", marginBottom: "20px" },
@@ -173,4 +195,13 @@ const styles = {
     minWidth: "90px",
   },
   pageIndicator: { fontSize: "14px" },
+  signOutButton: {
+    padding: "8px 16px",
+    borderRadius: "6px",
+    border: "1px solid #ff6600",
+    backgroundColor: "#ff6600",
+    color: "#fff",
+    cursor: "pointer",
+    minWidth: "90px",
+  },
 };
