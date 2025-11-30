@@ -17,12 +17,6 @@ A modern, responsive **Hacker News** front-end built with **React** and **Vite**
 
 ---
 
-## **Demo**
-
-*Insert screenshot or GIF of your app here*
-
----
-
 ## **Getting Started**
 
 ### **Prerequisites**
