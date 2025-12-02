@@ -1,207 +1,177 @@
-import { useEffect, useState } from "react";
-import { fetchList, fetchItem } from "./api/hackerNews";
-import PostList from "./components/postList";
+import React, { useState, useEffect } from "react";
+import "bootstrap/dist/css/bootstrap.min.css";
 import Login from "./components/login";
 
-const STORY_TYPES = [
-  { key: "topstories", label: "Top Posts" },
-  { key: "newstories", label: "New Posts" },
-];
-
-const PAGE_OPTIONS = [10, 20, 50, 100];
-
 export default function App() {
-  const [user, setUser] = useState(null); // track logged in user
-  const [postType, setPostType] = useState("topstories");
-  const [storyIds, setStoryIds] = useState([]);
-  const [stories, setStories] = useState([]);
+  const [loggedIn, setLoggedIn] = useState(false);
+  const [posts, setPosts] = useState([]);
+  const [type, setType] = useState("topstories");
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(20);
+  const [postsPerPage, setPostsPerPage] = useState(10);
   const [viewAll, setViewAll] = useState(false);
-  const [loading, setLoading] = useState(false);
 
-  // Fetch story IDs when postType changes or user logs in
+  // Fetch post IDs
+  async function fetchPosts(type) {
+    const res = await fetch(
+      `https://hacker-news.firebaseio.com/v0/${type}.json`
+    );
+    return res.json();
+  }
+
+  // Fetch single post
+  async function fetchItem(id) {
+    const res = await fetch(
+      `https://hacker-news.firebaseio.com/v0/item/${id}.json`
+    );
+    return res.json();
+  }
+
+  // Fetch posts whenever type, pagination, or viewAll changes
   useEffect(() => {
-    if (!user) return; // only load stories if logged in
-    async function loadIds() {
-      setLoading(true);
-      const ids = await fetchList(postType);
-      setStoryIds(ids);
-      setCurrentPage(1);
-      setViewAll(false);
-      setLoading(false);
+    async function load() {
+      const ids = await fetchPosts(type);
+
+      const selectedIds = viewAll
+        ? ids
+        : ids.slice(0, currentPage * postsPerPage);
+
+      const fullPosts = await Promise.all(selectedIds.map(fetchItem));
+      setPosts(fullPosts.filter(Boolean));
     }
-    loadIds();
-  }, [postType, user]);
 
-  // Fetch stories for current page or view all
-  useEffect(() => {
-    if (!user || storyIds.length === 0) return;
+    load();
+  }, [type, currentPage, postsPerPage, viewAll]);
 
-    async function loadStories() {
-      setLoading(true);
-      const start = 0;
-      const end = viewAll ? storyIds.length : currentPage * pageSize;
-      const items = await Promise.all(
-        storyIds.slice(start, end).map((id) => fetchItem(id))
-      );
-      setStories(items);
-      setLoading(false);
-    }
-    loadStories();
-  }, [storyIds, currentPage, pageSize, viewAll, user]);
-
-  const totalPages = Math.ceil(storyIds.length / pageSize);
-
-  const goToPrevPage = () => setCurrentPage((prev) => Math.max(prev - 1, 1));
-  const goToNextPage = () => setCurrentPage((prev) => Math.min(prev + 1, totalPages));
-
-  const handleViewAll = () => setViewAll(true);
-
-  // --- If not logged in, show login screen ---
-  if (!user) {
-    return <Login onLogin={setUser} />;
+  if (!loggedIn) {
+    return <Login onLogin={() => setLoggedIn(true)} />;
   }
 
   return (
-    <div style={styles.container}>
-      <h1 style={styles.header}>Hacker News Redesign</h1>
+    <div className="min-vh-100 d-flex flex-column" style={{ background: "#1e1e1e", color: "#fff" }}>
+      {/* HEADER / NAVBAR */}
+      <nav className="navbar navbar-expand-lg navbar-dark bg-dark px-3">
+        <a className="navbar-brand fw-bold" href="#" style={{ color: "#ff6600" }}>
+          HackerNews React
+        </a>
+        <button
+          className="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navMenu"
+        >
+          <span className="navbar-toggler-icon"></span>
+        </button>
 
-      {/* Welcome & Sign Out */}
-      {user && (
-        <div style={{ marginBottom: "20px" }}>
-          <span style={{ marginRight: "15px" }}>Welcome, <strong>{user}</strong>!</span>
-          <button style={styles.signOutButton} onClick={() => setUser(null)}>
+        <div className="collapse navbar-collapse" id="navMenu">
+          <ul className="navbar-nav me-auto mb-2 mb-lg-0 d-flex flex-row gap-2">
+            <li className="nav-item">
+              <button
+                className={`btn ${type === "topstories" ? "btn-warning" : "btn-outline-warning"}`}
+                style={{ backgroundColor: type === "topstories" ? "#ff6600" : "transparent", color: type === "topstories" ? "#000" : "#ff6600", borderColor: "#ff6600" }}
+                onClick={() => { setType("topstories"); setCurrentPage(1); }}
+              >
+                Top Posts
+              </button>
+            </li>
+            <li className="nav-item">
+              <button
+                className={`btn ${type === "newstories" ? "btn-warning" : "btn-outline-warning"}`}
+                style={{ backgroundColor: type === "newstories" ? "#ff6600" : "transparent", color: type === "newstories" ? "#000" : "#ff6600", borderColor: "#ff6600" }}
+                onClick={() => { setType("newstories"); setCurrentPage(1); }}
+              >
+                New Posts
+              </button>
+            </li>
+          </ul>
+          <button
+            className="btn"
+            style={{ backgroundColor: "#ff6600", color: "#000", border: "none" }}
+            onClick={() => setLoggedIn(false)}
+          >
             Sign Out
           </button>
         </div>
-      )}
+      </nav>
 
-      {/* Toggle Top/New */}
-      <div style={styles.toggle}>
-        {STORY_TYPES.map((type) => (
-          <button
-            key={type.key}
-            style={postType === type.key ? styles.activeButton : styles.button}
-            onClick={() => setPostType(type.key)}
+      {/* MAIN CONTENT */}
+      <div className="container py-4 flex-grow-1">
+        {/* Pagination Controls */}
+        <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+          <select
+            className="form-select w-auto"
+            value={postsPerPage}
+            onChange={(e) => {
+              setPostsPerPage(Number(e.target.value));
+              setCurrentPage(1);
+              setViewAll(false); // collapse viewAll when changing per-page
+            }}
           >
-            {type.label}
-          </button>
-        ))}
-      </div>
+            <option value={5}>5 per page</option>
+            <option value={10}>10 per page</option>
+            <option value={20}>20 per page</option>
+          </select>
 
-      {/* Page size selector & View All */}
-      <div style={{ marginBottom: "15px" }}>
-        <label htmlFor="pageSize" style={{ marginRight: "10px" }}>Posts per page:</label>
-        <select
-          id="pageSize"
-          value={pageSize}
-          onChange={(e) => {
-            setPageSize(Number(e.target.value));
-            setCurrentPage(1);
-            setViewAll(false);
-          }}
-          style={{ padding: "6px 10px", borderRadius: "6px" }}
-        >
-          {PAGE_OPTIONS.map((size) => (
-            <option key={size} value={size}>{size}</option>
-          ))}
-        </select>
-
-        <button
-          style={{ ...styles.pageButton, marginLeft: "15px" }}
-          onClick={handleViewAll}
-        >
-          View All
-        </button>
-      </div>
-
-      {loading && <p>Loading posts...</p>}
-
-      {!loading && <PostList stories={stories} />}
-
-      {/* Pagination */}
-      {!loading && !viewAll && totalPages > 1 && (
-        <div style={styles.pagination}>
           <button
-            style={styles.pageButton}
-            onClick={goToPrevPage}
-            disabled={currentPage === 1}
+            className="btn"
+            style={{ backgroundColor: "#ff6600", color: "#000", border: "none" }}
+            onClick={() => { setViewAll(!viewAll); setCurrentPage(1); }}
           >
-            Previous
-          </button>
-          <span style={styles.pageIndicator}>
-            Page {currentPage} of {totalPages}
-          </span>
-          <button
-            style={styles.pageButton}
-            onClick={goToNextPage}
-            disabled={currentPage === totalPages}
-          >
-            Next
+            {viewAll ? "Collapse" : "View All"}
           </button>
         </div>
-      )}
+
+        {/* POSTS GRID */}
+        <div className="row g-4">
+          {posts.map((post) => (
+            <div className="col-12 col-sm-6 col-md-4 col-lg-3" key={post.id}>
+              <div className="card h-100 shadow-sm">
+                <div className="card-body d-flex flex-column">
+                  <h5 className="card-title">{post.title}</h5>
+                  <p className="text-warning mb-2">⭐ {post.score || 0}</p>
+                  <p className="text-muted mb-3" style={{ fontSize: "0.8rem" }}>
+                    by {post.by || "unknown"}
+                  </p>
+                  <a
+                    href={post.url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="btn"
+                    style={{ backgroundColor: "#ff6600", color: "#000", border: "none", marginTop: "auto" }}
+                  >
+                    Read
+                  </a>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* PAGINATION */}
+        {!viewAll && (
+          <div className="d-flex justify-content-center mt-4 gap-2 flex-wrap">
+            <button
+              className="btn"
+              style={{ backgroundColor: "#ff6600", color: "#000", border: "none" }}
+              disabled={currentPage === 1}
+              onClick={() => setCurrentPage(currentPage - 1)}
+            >
+              Previous
+            </button>
+            <button
+              className="btn"
+              style={{ backgroundColor: "#ff6600", color: "#000", border: "none" }}
+              onClick={() => setCurrentPage(currentPage + 1)}
+            >
+              Next
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* FOOTER */}
+      <footer className="bg-dark text-light text-center py-3 mt-auto">
+        <small>Built with React + HackerNews API</small>
+      </footer>
     </div>
   );
 }
-
-// --- Styles ---
-const styles = {
-  container: {
-    width: "100%",
-    maxWidth: "1200px",
-    padding: "20px",
-    textAlign: "center",
-    backgroundColor: "#2c2c2c",
-    borderRadius: "8px",
-    boxShadow: "0 0 15px rgba(0,0,0,0.5)",
-    color: "#fff",
-    margin: "40px auto",
-    fontFamily: "Arial, sans-serif",
-  },
-  header: { marginBottom: "20px", textAlign: "center" },
-  toggle: { display: "flex", justifyContent: "center", gap: "10px", marginBottom: "20px" },
-  button: {
-    padding: "10px 20px",
-    borderRadius: "6px",
-    border: "1px solid #444",
-    cursor: "pointer",
-    background: "#3a3a3a",
-    color: "#ccc",
-  },
-  activeButton: {
-    padding: "10px 20px",
-    borderRadius: "6px",
-    border: "1px solid #ff6600",
-    background: "#ff6600",
-    color: "#fff",
-    cursor: "pointer",
-  },
-  pagination: {
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    gap: "15px",
-    marginTop: "20px",
-  },
-  pageButton: {
-    padding: "8px 16px",
-    borderRadius: "6px",
-    border: "1px solid #ff6600",
-    backgroundColor: "#ff6600",
-    color: "#fff",
-    cursor: "pointer",
-    minWidth: "90px",
-  },
-  pageIndicator: { fontSize: "14px" },
-  signOutButton: {
-    padding: "8px 16px",
-    borderRadius: "6px",
-    border: "1px solid #ff6600",
-    backgroundColor: "#ff6600",
-    color: "#fff",
-    cursor: "pointer",
-    minWidth: "90px",
-  },
-};
