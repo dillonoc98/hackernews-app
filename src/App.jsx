@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import Login from "./components/login";
-import Navbar from "./components//navBar";
+import Navbar from "./components/navBar";
 import Footer from "./components/Footer";
 
 export default function App() {
