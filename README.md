@@ -1,33 +1,27 @@
-# Hacker News Redesign - React App
+# HackerNews React App
 
-A modern, responsive **Hacker News** front-end built with **React** and **Vite**, featuring a dark theme, pagination, and flexible post viewing options. This project demonstrates practical **frontend skills**, including API integration, state management, and UX design.
+A modern, responsive React application that consumes the [Hacker News API](https://github.com/HackerNews/API).  
 
----
-
-## **Features**
-
-- **Fetch Hacker News posts** from the official [Hacker News API](https://github.com/HackerNews/API)
-- **Toggle between Top Posts and New Posts**
-- **Dark theme** with centered, card-style layout
-- **Responsive design** with a flexible grid for posts
-- **Pagination** with Previous / Next navigation
-- **Posts per page selector** (10, 20, 50, 100)
-- **“View All” button** to load all posts on a single page
-- **Clean, modern UI** with readable text and visual hierarchy
+Users can log in, view top or new posts, paginate through results, and view all posts with a clean, mobile-friendly interface.
 
 ---
 
-## **Getting Started**
+## Features
 
-### **Prerequisites**
-
-- Node.js >= 18.x  
-- npm or yarn  
-- Git
+- **Login Screen** with username/password placeholder (mock login)
+- **Top/New Posts Toggle**
+- **Responsive Posts Grid**: 1–4 posts per row depending on screen size
+- **Pagination**: choose posts per page and navigate previous/next
+- **View All / Collapse** button for quick browsing
+- **Sign Out** button
+- **Navbar** with mobile collapse (hamburger menu)
+- **Header and Footer** styling with consistent color scheme
+- **Bootstrap 5** for responsive design
+- **React functional components + hooks**
 
 ---
 
-### **Installation**
+## Installation
 
 1. Clone the repository:
 
