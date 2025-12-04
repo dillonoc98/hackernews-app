@@ -6,6 +6,8 @@ Users can log in, view top or new posts, paginate through results, and view all 
 
 ---
 
+https://hackeraassignment.netlify.app/ 
+
 ## Features
 
 - **Login Screen** with username/password placeholder (mock login)
@@ -18,10 +20,16 @@ Users can log in, view top or new posts, paginate through results, and view all 
 - **Header and Footer** styling with consistent color scheme
 - **Bootstrap 5** for responsive design
 - **React functional components + hooks**
+- **Hosted on netlify. https://hackeraassignment.netlify.app/
+- **End to End test added using playwrite tests
 
 ---
 
 ## Installation
+
+To test :
+npx playwright test 
+
 
 1. Clone the repository:
 
