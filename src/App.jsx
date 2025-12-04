@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
-import Login from "./components/Login";
+import Login from "./components/login";
 import Navbar from "./components/NavBar";
 import Footer from "./components/Footer";
 
