@@ -25,10 +25,11 @@ https://hackeraassignment.netlify.app/
 
 ---
 
-## Installation
+## To Test
 
-To test :
-npx playwright test 
+npx playwright test --headed
+
+## Installation
 
 
 1. Clone the repository:
