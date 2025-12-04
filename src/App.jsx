@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
-import Login from "./components/login";
-import Navbar from "./components/navBar";
+import Login from "./components/Login";
+import Navbar from "./components/NavBar";
 import Footer from "./components/Footer";
 
 export default function App() {
@@ -75,7 +75,6 @@ export default function App() {
 
       {/* Main Content */}
       <div className="container py-4 flex-grow-1">
-        {/* Error Message */}
         {error && (
           <div className="alert alert-danger text-center" role="alert">
             {error}
@@ -95,6 +94,9 @@ export default function App() {
               backgroundColor: "#ff6600",
               color: "#000",
               border: "1px solid #ff6600",
+              WebkitAppearance: "none",
+              MozAppearance: "none",
+              appearance: "none",
             }}
           >
             <option value={5}>5 per page</option>
@@ -145,6 +147,7 @@ export default function App() {
                       target="_blank"
                       rel="noreferrer"
                       className="btn btn-warning mt-auto"
+                      style={{ color: "#000", borderColor: "#ff6600", backgroundColor: "#ff6600" }}
                     >
                       Read
                     </a>

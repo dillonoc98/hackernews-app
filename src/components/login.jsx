@@ -6,7 +6,8 @@ export default function Login({ onLogin }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onLogin(); // call the parent login handler
+    // Optional: add validation here
+    onLogin(); // ✅ Call parent login handler
   };
 
   return (
@@ -18,7 +19,7 @@ export default function Login({ onLogin }) {
         className="card p-4 text-center"
         style={{ width: "100%", maxWidth: "400px", minWidth: "300px" }}
       >
-        <h2 className="mb-4" style={{ color: "#ff6600" }}>Sign In</h2>
+        <h2 className="mb-4 text-dark">Sign In</h2>
 
         <form onSubmit={handleSubmit}>
           {/* Username */}
@@ -54,7 +55,15 @@ export default function Login({ onLogin }) {
           </div>
 
           {/* Sign In Button */}
-          <button type="submit" className="btn btn-warning w-100">
+          <button
+            type="submit"
+            className="btn w-100"
+            style={{
+              backgroundColor: "#ff6600",
+              color: "#000",
+              border: "1px solid #ff6600",
+            }}
+          >
             Sign In
           </button>
         </form>
