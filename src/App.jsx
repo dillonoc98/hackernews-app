@@ -137,10 +137,20 @@ export default function App() {
               <div className="col-12 col-sm-6 col-md-4 col-lg-3" key={post.id}>
                 <div className="card h-100 shadow-sm">
                   <div className="card-body d-flex flex-column">
-                    <h5 className="card-title">{post.title}</h5>
-                    <p className="text-warning mb-2">⭐ {post.score || 0}</p>
+                    <h5 className="card-title"><b>{post.title}</b></h5><p className="text-dark mb-2">
+                      Points: <b>{post.score || 0}</b> 
+                    </p>
                     <p className="text-muted mb-3" style={{ fontSize: "0.8rem" }}>
                       by {post.by || "unknown"}
+                    </p>
+                    <p className="text-muted mb-3" style={{ fontSize: "0.8rem" }}>
+                      Date: {post.time
+                        ? new Date(post.time * 1000).toLocaleDateString(undefined, { 
+                            day: "numeric", 
+                            month: "long", 
+                            year: "numeric" 
+                          })
+                        : "unknown"}
                     </p>
                     <a
                       href={post.url}
